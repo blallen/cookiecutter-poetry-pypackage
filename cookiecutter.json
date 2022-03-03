@@ -7,6 +7,5 @@
   "project_short_description": "Awesome Python code.",
   "version": "0.0.0",
   "command_line_interface": ["Click", "Argparse", "No command-line interface"],
-  "create_author_file": "y",
-  "license": ["Proprietary"]
+  "create_author_file": "y"
 }
