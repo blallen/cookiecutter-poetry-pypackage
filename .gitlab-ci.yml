@@ -1,0 +1,15 @@
+# Global --------------------------
+
+stages:
+  - quality
+  - tests
+
+# Jobs templates ------------------
+
+python-tox:
+  image: python:3.8
+  stage: tests
+  script:
+    - python -V
+    - pip install tox
+    - tox

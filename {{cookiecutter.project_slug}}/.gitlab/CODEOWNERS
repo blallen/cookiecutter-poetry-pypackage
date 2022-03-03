@@ -1,0 +1,24 @@
+[DEFAULT]
+* @{{ cookiecutter.gitlab_username }}
+
+[TOOLING]
+.bumpversion.cfg @ballen
+.editorconfig @ballen
+.flake8 @ballen
+.gitattributes @ballen
+.gitlab/ @ballen
+.gitlab-ci.yml @ballen
+.pre-commit-config.yaml @ballen
+.secrets_template @{{ cookiecutter.gitlab_username }}
+Makefile @ballen
+pyproject.toml @{{ cookiecutter.gitlab_username }}
+
+[DEPLOYMENT]
+docker-entrypoint.sh @ballen
+Dockerfile @ballen
+
+[SOURCE]
+/cookiecutter-poetry-pyproject/ @{{ cookiecutter.gitlab_username }}
+
+[TESTS]
+/tests/ @{{ cookiecutter.gitlab_username }}

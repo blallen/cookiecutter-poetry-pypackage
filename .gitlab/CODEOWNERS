@@ -1,0 +1,24 @@
+[DEFAULT]
+* @ballen
+
+[TOOLING]
+.bumpversion.cfg @ballen
+.editorconfig @ballen
+.flake8 @ballen
+.gitattributes @ballen
+.gitlab/ @ballen
+.gitlab-ci.yml @ballen
+.pre-commit-config.yaml @ballen
+.secrets_template @ballen
+Makefile @ballen
+pyproject.toml @ballen
+
+[DEPLOYMENT]
+docker-entrypoint.sh @ballen
+Dockerfile @ballen
+
+[SOURCE]
+/cookiecutter-poetry-pyproject/ @ballen
+
+[TESTS]
+/tests/ @ballen

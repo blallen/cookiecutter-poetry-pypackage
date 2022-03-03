@@ -3,7 +3,7 @@
 Development Lead
 ----------------
 
-* [Alberto Rios](https://github.com/albertorios) <7119264+albertorios@users.noreply.github.com>
+* Brandon Allen <ballen@symbotic.com>
 
 Contributors
 ------------

@@ -4,7 +4,8 @@
 .PHONY: version-bump-major version-bump-minor version-bump-patch
 .PHONY: lint test test-all coverage
 .PHONY: build publish install
-.PHONY: docker-build docker-rm docker-run
+.PHONY: docker-build docker-rm docker-run docker-publish
+.PHONY: openfaas-deploy
 .DEFAULT_GOAL := help
 
 ########
@@ -40,37 +41,12 @@ clean-test: ## remove test and coverage artifacts
 ##########
 # poetry #
 ##########
-poetry-init: ## install poetry
-	@echo 'Installing poetry...'
-	./scripts/install-poetry.sh
-	poetry --version
-
-poetry-install: poetry-init
+poetry-install:
 	rm -f poetry.lock
 	poetry install
 
 poetry-requirements-txt: ## export dependencies to requirements.txt
-	poetry export --without-hashes -f requirements.txt | sed -e 's/;.*//g' > requirements.txt
-
-poetry-requirements-dev-txt: poetry-requirements-txt ## export dev dependencies to requirements_dev.txt (EXPERIMENTAL)
-	poetry export --without-hashes --dev -f requirements.txt | sed -e 's/;.*//g' > requirements_dev.txt
-	cat requirements.txt requirements_dev.txt \
-	| sort | uniq -u | sed -e "s/==.*//g" \
-	| xargs -n 1 -P 8 -I % poetry show % \
-	| grep '^name\|^ - ' | tr -s ' ' | cut -s -d' ' -f 3 \
-	| sort | uniq \
-	| xargs -n 1 -P 8 -I % grep -E "^%==" requirements_dev.txt | sort | uniq > only_dev_reqs.txt
-	mv -f only_dev_reqs.txt requirements_dev.txt
-
-###########
-# version #
-###########
-version-bump-major: ## bump major version
-	bump2version major
-version-bump-minor: ## bump minor version
-	bump2version minor
-version-bump-patch: ## bump patch version
-	bump2version patch
+	poetry export --without-hashes -f requirements.txt > requirements.txt
 
 ###############
 # lint & test #
@@ -121,9 +97,15 @@ endif
 PROJECT_NAME = $(shell poetry version | cut -d ' ' -f 1)
 GIT_SHORT_HASH = $(shell git rev-parse --short HEAD)
 DOCKER_RUN_CMD ?= help
+VERSION = 0.0.0
+ifndef LABEL
+TAG = bot-anomaly-detector-fn:$(VERSION)
+else
+TAG = bot-anomaly-detector-fn:$(VERSION)_$(LABEL)
+endif
 
 docker-build:  ## build docker container
-	docker build -t $(PROJECT_NAME) .
+	docker build -t $(TAG) .
 
 docker-rm: ## delete previously named docker container
 	@echo 'Removing previous containers...'
@@ -136,3 +118,31 @@ docker-run: docker-rm  ## runs named docker container
 		-e POETRY_HTTP_BASIC_PYPI_USERNAME=$(POETRY_HTTP_BASIC_PYPI_USERNAME) \
 		-e POETRY_HTTP_BASIC_PYPI_PASSWORD=$(POETRY_HTTP_BASIC_PYPI_PASSWORD) \
 		-i $(PROJECT_NAME) $(DOCKER_RUN_CMD)
+
+docker-publish:
+	$(MAKE) docker-build
+	docker login proget.repo.symbotic.corp -u $(DOCKER_USER) -p $(DOCKER_PASS)
+	docker tag $(TAG) proget.repo.symbotic.corp/dev_images/library/$(TAG)
+	docker push proget.repo.symbotic.corp/dev_images/library/$(TAG)
+
+#############
+# openfaas  #
+#############
+openfaas-deploy:
+	faas-cli login -g $(OPENFAAS_URL) --password $(OPENFAAS_PASS)
+	faas-cli template pull
+	faas-cli deploy -f bot-anomaly-detector.yml
+
+#######
+# git #
+#######
+
+git-prune-merged-branches:
+	git checkout master
+	git fetch --prune
+	git branch --merged master | grep -v "^[ *]*master\$$" | xargs git branch -d
+
+git-prune-deleted-branches:
+	git checkout master
+	git fetch --prune
+	git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D

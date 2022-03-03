@@ -1,0 +1,56 @@
+[flake8]
+max-line-length = 88
+doctests = True
+extend-exclude =
+    .git
+    __pycache__
+    .venv
+    .pytest_cache
+    .tox
+    .vscode
+    .gitlab
+    docs
+    template
+extend-ignore =
+    E501    # Ignore long lines for now (69 instances and counting)
+    D202    # I like blank line after doc strings
+    D401    # Not everything needs to be imperative
+    D404    # Dan likes to start doc strings with `This`
+    DAR103  # Not documenting types because they are in function signature
+    DAR203
+    DAR401  # Documenting exceptions raised bloats docstrings
+    DAR000  # Seems to be buggy
+    CCR001  # Cognitive complexity, like this, but don't want it to stop commits
+    CFQ002  # but comment out these errors if you want to check for it
+    # CFQ004  # too many return statements
+per-file-ignores =
+    test_*.py:
+    # Want to use long lines in tests
+        E501
+    # Don't want docstrings in tests
+        D103
+    # Don't want type annotations for tests
+        ANN001
+        ANN201
+    BHM-188_alerting_mean_tests.py:
+    # This check makes unit tests less readable
+        E712
+    convert_ion_to_json.py:
+    # Weird CI failure that's not replicable
+        E999
+    convert_json_to_h5.py:
+    # Weird CI failure that's not replicable
+        E999
+    scripts/*:
+        # don't run doc linting on scripts
+        D
+        RST
+        DAR
+        E501
+# for flake8-docstrings
+docstring-convention = numpy
+# for darglint
+docstring-style = numpy
+strictness = long
+# for flake8_typing_imports
+min_python_version = 3.7
